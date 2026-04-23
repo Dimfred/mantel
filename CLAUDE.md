@@ -28,3 +28,8 @@ Terminal image overlay daemon for macOS using AppKit.
 - `WindowObserver.swift` - Accessibility API observer for window move/resize events
 - `FocusObserver.swift` - NSWorkspace observer for app focus changes
 - `Command.swift` - JSON command structure
+
+## TODOs
+
+- make window generic i.e. not terminal but windows in gen, i.e. terminal_pid -> window_pid, extract the row's col's stuff?
+    - local json="{\"action\":\"add\",\"identifier\":\"lf-$id-preview\",\"terminal_pid\":$pid,\"path\":\"$(realpath "$file")\",\"x\":$x,\"y\":$y,\"width\":$DISP_W,\"height\":$DISP_H,\"cols\":$cols,\"rows\":$rows}"
