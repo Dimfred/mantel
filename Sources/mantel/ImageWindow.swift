@@ -25,8 +25,8 @@ final class ImageWindow {
         print("mantel: ImageWindow.init window.frame=\(window.frame)")
         window.isOpaque = false
         window.backgroundColor = .clear
-        // Float above normal windows (including terminal)
-        window.level = .floating
+        // Same level as normal windows for proper z-ordering
+        window.level = .normal
         // Don't intercept mouse events - let them pass through to terminal
         window.ignoresMouseEvents = true
         // Visible on all spaces/desktops
@@ -47,6 +47,11 @@ final class ImageWindow {
     /// Make window visible
     func show() {
         window.orderFront(nil)
+    }
+
+    /// Order this window just above the given window number
+    func orderAbove(windowNumber: CGWindowID) {
+        window.order(.above, relativeTo: Int(windowNumber))
     }
 
     /// Hide window without destroying it

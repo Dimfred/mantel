@@ -16,6 +16,8 @@ final class WindowManager {
     private var lastCommands: [String: Command] = [:]
     /// Window observers per terminal PID
     private var observers: [pid_t: WindowObserver] = [:]
+    /// Focus observer for re-ordering on focus change
+    private var focusObserver: FocusObserver?
 
     func setCellSize(width: CGFloat, height: CGFloat) {
         self.cellWidth = width
@@ -120,17 +122,26 @@ final class WindowManager {
             }
         }
 
+        // Start focus observer if not already running
+        if focusObserver == nil {
+            let obs = FocusObserver { [weak self] activePid in
+                self?.handleFocusChange(activePid: activePid)
+            }
+            obs.start()
+            focusObserver = obs
+        }
+
         // Reuse existing window if same identifier, otherwise create new
         if let existing = windows[command.identifier] {
             print("mantel: reusing window \(command.identifier), updating frame")
             existing.updateImage(image)
             existing.updateFrame(frame)
-            existing.show()
+            existing.orderAbove(windowNumber: terminal.windowNumber)
         } else {
             print("mantel: creating new window \(command.identifier)")
             let imageWindow = ImageWindow(identifier: command.identifier, image: image, frame: frame)
             windows[command.identifier] = imageWindow
-            imageWindow.show()
+            imageWindow.orderAbove(windowNumber: terminal.windowNumber)
         }
     }
 
@@ -139,12 +150,50 @@ final class WindowManager {
         // Small delay to let window bounds update before we query them
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) { [weak self] in
             guard let self else { return }
-            for (_, command) in self.lastCommands {
-                if command.terminalPid == pid {
-                    self.handleCommand(command)
+            self.repositionImages(forTerminalPid: pid)
+        }
+    }
+
+    /// Reposition existing images without going through command queue
+    private func repositionImages(forTerminalPid pid: pid_t) {
+        for (identifier, command) in lastCommands {
+            guard command.terminalPid == pid,
+                  let imageWindow = windows[identifier],
+                  let terminal = getTerminal(pid: pid) else {
+                continue
+            }
+
+            let frame = calculateFrame(command, terminal: terminal)
+            imageWindow.updateFrame(frame)
+            imageWindow.orderAbove(windowNumber: terminal.windowNumber)
+        }
+    }
+
+    /// Called when any application becomes active - re-order images above their terminals
+    private func handleFocusChange(activePid: pid_t) {
+        // Small delay to let window z-order update
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) { [weak self] in
+            guard let self else { return }
+            print("mantel: Focus changed to \(activePid), re-ordering images")
+            for (identifier, command) in self.lastCommands {
+                guard let imageWindow = self.windows[identifier],
+                      let terminalPid = command.terminalPid,
+                      let terminal = self.getTerminal(pid: terminalPid) else {
+                    continue
                 }
+                imageWindow.orderAbove(windowNumber: terminal.windowNumber)
             }
         }
+    }
+
+    /// Get parent PID using sysctl
+    private func getParentPID(of pid: pid_t) -> pid_t? {
+        var info = kinfo_proc()
+        var size = MemoryLayout<kinfo_proc>.size
+        var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, pid]
+        let result = sysctl(&mib, 4, &info, &size, nil, 0)
+        guard result == 0 else { return nil }
+        return info.kp_eproc.e_ppid
     }
 
     /// Hide an image but keep window allocated for reuse.
@@ -152,6 +201,7 @@ final class WindowManager {
     /// Windows pile up over time - needs fix.
     private func removeImage(identifier: String) {
         windows[identifier]?.close()
+        lastCommands.removeValue(forKey: identifier)
     }
 
     /// Find terminal window for given PID.

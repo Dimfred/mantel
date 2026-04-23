@@ -7,6 +7,8 @@ struct TerminalWindow {
     /// Window bounds in screen coordinates (Y=0 at top)
     let bounds: CGRect
     let pid: pid_t
+    /// CGWindowID for z-ordering
+    let windowNumber: CGWindowID
 
     /// Find window owned by specific PID using CGWindowList.
     /// Returns first matching on-screen window.
@@ -19,6 +21,7 @@ struct TerminalWindow {
         for window in windowList {
             guard let ownerPID = window[kCGWindowOwnerPID as String] as? pid_t,
                   ownerPID == pid,
+                  let windowNum = window[kCGWindowNumber as String] as? CGWindowID,
                   let boundsDict = window[kCGWindowBounds as String] as? [String: CGFloat],
                   let x = boundsDict["X"],
                   let y = boundsDict["Y"],
@@ -28,7 +31,7 @@ struct TerminalWindow {
             }
 
             let bounds = CGRect(x: x, y: y, width: width, height: height)
-            return TerminalWindow(bounds: bounds, pid: pid)
+            return TerminalWindow(bounds: bounds, pid: pid, windowNumber: windowNum)
         }
 
         return nil
@@ -46,8 +49,8 @@ struct TerminalWindow {
         var currentPID = pid
 
         for _ in 0..<10 {
-            if let window = find(forPID: currentPID) {
-                return window
+            if let terminal = find(forPID: currentPID) {
+                return terminal
             }
             currentPID = getParentPID(of: currentPID) ?? 1
             if currentPID <= 1 {
