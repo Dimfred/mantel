@@ -44,8 +44,19 @@ check: format lint test ## run all checks (format, lint, test)
 
 ################################################################################
 # INSTALL
-install: build-release ## install the binary locally
+PLIST_NAME := com.dimfred.$(PROJECT_NAME).plist
+PLIST_DST := ~/Library/LaunchAgents/$(PLIST_NAME)
+
+install: build-release ## install binary and launchd service
 	cp .build/release/$(PROJECT_NAME) /usr/local/bin/
+	cp $(PLIST_NAME) $(PLIST_DST)
+	-launchctl bootout gui/$$(id -u) $(PLIST_DST)
+	launchctl bootstrap gui/$$(id -u) $(PLIST_DST)
+
+uninstall: ## uninstall binary and launchd service
+	launchctl bootout gui/$$(id -u) $(PLIST_DST)
+	rm -f /usr/local/bin/$(PROJECT_NAME)
+	rm -f $(PLIST_DST)
 
 ################################################################################
 # RELEASE

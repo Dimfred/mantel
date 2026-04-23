@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.dimfred.mantel</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>/usr/local/bin/mantel</string>
+    </array>
+    <key>StandardOutPath</key>
+    <string>/tmp/mantel.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/mantel.log</string>
+    <key>KeepAlive</key>
+    <true/>
+    <key>RunAtLoad</key>
+    <true/>
+  </dict>
+</plist>
