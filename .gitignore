@@ -1,13 +1,44 @@
 # GENERAL
 **/build/*
 **/*.log
+.env
+
 # EDITOR
+**/.DS_Store
+*.iml
+*.ipr
+*.iws
+*.swn
+*.swo
+*.swp
+*~
 .VSCodeCounter
+.clj-kondo/
 .idea
+.idea
+.lsp/
 .nvim
 .vimspector.json
-**/clangd
-**/compile_commands.json
+.vscode/
+.nb-gradle/
+nbbuild/
+nbdist/
+nbproject/private/
+
+# JAVA / MAVEN
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**
+!**/src/test/**
+plugins
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
 # PYTHON
 **/__pycache__
 **/**/__pycache__
@@ -18,7 +49,6 @@
 .hypothesis
 **/try.py
 **/celerybeat-schedule
-dist/
 out/
 wheels/
 **/*.ju.py
@@ -27,6 +57,7 @@ wheels/
 venv/
 .venv/
 **/*.whl
+
 # AI
 lightning_logs/
 runs/
@@ -35,30 +66,39 @@ runs/
 **/*.pt
 **/*.pkl
 **/*.npy
+
 # NODE JS TS
 **/node_modules
 out/
 dist/
-# Editor temporaries
-*.swn
-*.swo
-*.swp
-*~
+.svelte-kit
+
+# Editor / OS temporaries
+
 # CPP
-.cache
+**/*.dll
 **/.ccls-cache
-doxygen
-compile-commands.json
+**/clangd
+**/compile_commands.json
+.cache
 CMakeCache.txt
 CMakeFiles
-**/*.dll
+compile-commands.json
+doxygen
+
 # SOLIDITY
 **/cache
 **/artifacts
 **/*coverage*
 **/@openzeppelin/*
 **/gasReporterOutput.json
+
+# SWIFT
+.build
+
 # DB
 **/*.db
+
 # SUBMODULES
-/.build
+
+

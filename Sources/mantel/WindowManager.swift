@@ -4,7 +4,7 @@ import Foundation
 /// Manages all image overlay windows.
 /// Commands are queued and processed serially to avoid race conditions with AppKit.
 @MainActor
-final class WindowManager {
+public final class WindowManager {
     /// Active windows keyed by identifier (e.g. "preview")
     private var windows: [String: ImageWindow] = [:]
     private var cellWidth: CGFloat = 10
@@ -12,14 +12,16 @@ final class WindowManager {
     /// Command queue for serial processing
     private var pendingCommands: [Command] = []
     private var isProcessing = false
-    /// Track last command per identifier for re-rendering on window move
-    private var lastCommands: [String: Command] = [:]
+    /// Track last add command per identifier for re-rendering on window move
+    private var lastAddCommands: [String: AddCommand] = [:]
     /// Window observers per terminal PID
     private var observers: [pid_t: WindowObserver] = [:]
     /// Focus observer for re-ordering on focus change
     private var focusObserver: FocusObserver?
 
-    func setCellSize(width: CGFloat, height: CGFloat) {
+    public init() {}
+
+    public func setCellSize(width: CGFloat, height: CGFloat) {
         self.cellWidth = width
         self.cellHeight = height
     }
@@ -27,7 +29,7 @@ final class WindowManager {
     /// Queue a command for processing.
     /// Commands are processed one at a time with a dispatch between each
     /// to let AppKit's autorelease pool drain.
-    func handleCommand(_ command: Command) {
+    public func handleCommand(_ command: Command) {
         pendingCommands.append(command)
         scheduleProcessing()
     }
@@ -58,17 +60,17 @@ final class WindowManager {
     }
 
     private func executeCommand(_ command: Command) {
-        switch command.action {
-        case .add:
-            addImage(command)
-        case .remove:
-            removeImage(identifier: command.identifier)
-        case .hide:
-            windows[command.identifier]?.hide()
-        case .show:
-            windows[command.identifier]?.show()
-        case .toggle:
-            windows[command.identifier]?.toggle()
+        switch command {
+        case .add(let addCommand):
+            addImage(addCommand)
+        case .remove(let removeCommand):
+            removeImage(identifier: removeCommand.identifier)
+        case .hide(let hideCommand):
+            windows[hideCommand.identifier]?.hide()
+        case .show(let showCommand):
+            windows[showCommand.identifier]?.show()
+        case .toggle(let toggleCommand):
+            windows[toggleCommand.identifier]?.toggle()
         case .clear:
             clearAll()
         }
@@ -80,25 +82,18 @@ final class WindowManager {
             window.destroy()
         }
         windows.removeAll()
+        lastAddCommands.removeAll()
     }
 
     /// Add or update an image overlay at the specified terminal cell position.
-    private func addImage(_ command: Command) {
-        guard let path = command.path else {
-            print("Missing path for add command")
-            return
-        }
-
+    private func addImage(_ command: AddCommand) {
+        let path = command.path
         guard let image = NSImage(contentsOfFile: path) else {
             print("Failed to load image: \(path)")
             return
         }
 
-        guard let terminalPid = command.terminalPid else {
-            print("Missing terminal_pid for add command")
-            return
-        }
-
+        let terminalPid = command.terminalPid
         guard let terminal = getTerminal(pid: terminalPid) else {
             print("Could not find terminal window for PID \(terminalPid)")
             return
@@ -108,7 +103,7 @@ final class WindowManager {
         let frame = calculateFrame(command, terminal: terminal)
 
         // Store command for re-rendering on window move
-        lastCommands[command.identifier] = command
+        lastAddCommands[command.identifier] = command
 
         // Start observing terminal window if not already
         if observers[terminalPid] == nil {
@@ -156,7 +151,7 @@ final class WindowManager {
 
     /// Reposition existing images without going through command queue
     private func repositionImages(forTerminalPid pid: pid_t) {
-        for (identifier, command) in lastCommands {
+        for (identifier, command) in lastAddCommands {
             guard command.terminalPid == pid,
                   let imageWindow = windows[identifier],
                   let terminal = getTerminal(pid: pid) else {
@@ -175,9 +170,9 @@ final class WindowManager {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) { [weak self] in
             guard let self else { return }
             print("mantel: Focus changed to \(activePid), re-ordering images")
-            for (identifier, command) in self.lastCommands {
+            for (identifier, command) in self.lastAddCommands {
+                let terminalPid = command.terminalPid
                 guard let imageWindow = self.windows[identifier],
-                      let terminalPid = command.terminalPid,
                       let terminal = self.getTerminal(pid: terminalPid) else {
                     continue
                 }
@@ -201,7 +196,7 @@ final class WindowManager {
     /// Windows pile up over time - needs fix.
     private func removeImage(identifier: String) {
         windows[identifier]?.close()
-        lastCommands.removeValue(forKey: identifier)
+        lastAddCommands.removeValue(forKey: identifier)
     }
 
     /// Find terminal window for given PID.
@@ -219,14 +214,14 @@ final class WindowManager {
 
     /// Convert cell-based coordinates from command to pixel frame.
     /// Terminal uses (0,0) at top-left, AppKit uses bottom-left, so we flip Y.
-    private func calculateFrame(_ command: Command, terminal: TerminalWindow) -> NSRect {
-        let x = command.x ?? 0
-        let y = command.y ?? 0
-        let width = command.width ?? 10
-        let height = command.height ?? 10
+    private func calculateFrame(_ command: AddCommand, terminal: TerminalWindow) -> NSRect {
+        let x = command.x
+        let y = command.y
+        let width = command.width
+        let height = command.height
 
-        let cols = command.cols ?? 80
-        let rows = command.rows ?? 24
+        let cols = command.cols
+        let rows = command.rows
 
         // Calculate cell size from terminal bounds and reported dimensions
         let cellW = terminal.bounds.width / CGFloat(cols)

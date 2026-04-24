@@ -1,46 +1,26 @@
 .ONESHELL:
 SHELL := /bin/bash
 all: help
-
-################################################################################
-# PROJECT CONFIG
 PROJECT_NAME := mantel
 
 ################################################################################
 # APP
+run: ## run the project
+	swift run
+
+test: ## run all tests
+	swift test
+
 build: ## build the project
 	swift build
 
 build-release: ## build the project in release mode
 	swift build -c release
 
-build-macos: ## build for macOS (arm64)
-	swift build -c release --arch arm64
-
-run: ## run the project
-	swift run
-
 clean: ## clean build artifacts
 	swift package clean
 	rm -rf .build
 
-################################################################################
-# TEST
-test: ## run all tests
-	swift test
-
-################################################################################
-# LINT
-lint: ## run swiftlint
-	swiftlint
-
-lint-fix: ## run swiftlint with auto-fix
-	swiftlint --fix
-
-format: ## format code with swift-format
-	swift-format -i -r Sources/ Tests/
-
-check: format lint test ## run all checks (format, lint, test)
 
 ################################################################################
 # INSTALL
@@ -62,7 +42,19 @@ uninstall: ## uninstall binary and launchd service
 # RELEASE
 release: version-patch release-github release-brew release-commit ## full release: bump + github + brew + commit
 
-release-github: build-macos ## create GitHub release with platform binaries
+version-patch: ## bump patch version (0.1.0 -> 0.1.1)
+	@if [ ! -f VERSION ]; then echo "0.1.0" > VERSION; fi; \
+	CURRENT=$$(cat VERSION); \
+	IFS='.' read -r MAJOR MINOR PATCH <<< "$$CURRENT"; \
+	NEW_PATCH=$$((PATCH + 1)); \
+	NEW_VERSION="$$MAJOR.$$MINOR.$$NEW_PATCH"; \
+	echo "$$NEW_VERSION" > VERSION; \
+	echo "Version bumped from $$CURRENT to $$NEW_VERSION"; \
+	git add VERSION; \
+	git commit -m "chore: bump v$$NEW_VERSION"; \
+	echo "Committed version bump"
+
+release-github: build-release
 	@VERSION=$$(grep -m1 'version:' Package.swift 2>/dev/null || grep -m1 '"[0-9]\+\.[0-9]\+\.[0-9]\+"' VERSION 2>/dev/null | tr -d '"' || echo "0.1.0"); \
 	if [ -f VERSION ]; then VERSION=$$(cat VERSION); fi; \
 	mkdir -p releases; \
@@ -85,7 +77,7 @@ release-github: build-macos ## create GitHub release with platform binaries
 		--latest; \
 	echo "Released v$$VERSION"
 
-release-brew: ## update brew formula, commit and push to homebrew-tap
+release-brew:
 	@VERSION=$$(cat VERSION); \
 	MACOS_URL="https://github.com/Dimfred/$(PROJECT_NAME)/releases/download/v$${VERSION}/$(PROJECT_NAME)-v$${VERSION}-arm64"; \
 	echo "Fetching macOS SHA..."; \
@@ -99,32 +91,24 @@ release-brew: ## update brew formula, commit and push to homebrew-tap
 	cd ../homebrew-tap && git add . && git commit -m "Update $(PROJECT_NAME) to v$$VERSION" && git push; \
 	echo "Pushed to homebrew-tap"
 
-release-commit: ## commit and push package updates
+release-commit:
 	@VERSION=$$(cat VERSION); \
 	git add package/; \
 	git commit --amend --no-edit; \
 	git push; \
 	echo "Pushed release v$$VERSION"
 
-version-patch: ## bump patch version (0.1.0 -> 0.1.1)
-	@if [ ! -f VERSION ]; then echo "0.1.0" > VERSION; fi; \
-	CURRENT=$$(cat VERSION); \
-	IFS='.' read -r MAJOR MINOR PATCH <<< "$$CURRENT"; \
-	NEW_PATCH=$$((PATCH + 1)); \
-	NEW_VERSION="$$MAJOR.$$MINOR.$$NEW_PATCH"; \
-	echo "$$NEW_VERSION" > VERSION; \
-	echo "Version bumped from $$CURRENT to $$NEW_VERSION"; \
-	git add VERSION; \
-	git commit -m "chore: bump v$$NEW_VERSION"; \
-	echo "Committed version bump"
-
-################################################################################
-# INIT
-init: ## initialize dev environment
-	brew install swiftlint swift-format
-
-################################################################################
+#########################################################################
 # HELP
 help: ## print this help
-	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) \
-		| awk 'BEGIN {FS = ":.*?## "}; {printf "\033[32m%-30s\033[0m %s\n", $$1, $$2}'
+	@awk '/^##+$$/ { \
+		getline; \
+		if ($$0 ~ /^# /) { \
+			gsub(/^# /, ""); \
+			printf "\n\033[1;34m%s\033[0m\n", $$0; \
+		} \
+	} \
+	/^[a-zA-Z0-9_-]+:.*?## / { \
+		split($$0, a, ":.*?## "); \
+		printf "  \033[32m%-28s\033[0m %s\n", a[1], a[2]; \
+	}' $(MAKEFILE_LIST)

@@ -6,13 +6,30 @@ import PackageDescription
 let package = Package(
     name: "mantel",
     platforms: [.macOS(.v13)],
+    products: [
+        .library(
+            name: "MantelCore",
+            targets: ["MantelCore"]
+        ),
+        .executable(
+            name: "mantel",
+            targets: ["mantel"]
+        ),
+    ],
     targets: [
+        .target(
+            name: "MantelCore",
+            path: "Sources/mantel"
+        ),
         .executableTarget(
-            name: "mantel"
+            name: "mantel",
+            dependencies: ["MantelCore"],
+            path: "Sources/mantel-bin"
         ),
         .testTarget(
-            name: "mantelTests",
-            dependencies: ["mantel"]
+            name: "MantelCoreTests",
+            dependencies: ["MantelCore"],
+            path: "Tests/mantelTests"
         ),
     ],
     swiftLanguageModes: [.v6]
