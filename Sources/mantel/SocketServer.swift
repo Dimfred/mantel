@@ -56,7 +56,7 @@ final class SocketServer: @unchecked Sendable {
         }
 
         isRunning = true
-        print("Listening on \(socketPath)")
+        logger.info("Listening on \(self.socketPath, privacy: .public)")
 
         acceptLoop()
     }
@@ -86,7 +86,7 @@ final class SocketServer: @unchecked Sendable {
 
                 guard clientSocket >= 0 else {
                     if self.isRunning {
-                        print("Accept failed")
+                        logger.error("Accept failed")
                     }
                     continue
                 }
@@ -119,7 +119,7 @@ final class SocketServer: @unchecked Sendable {
                 let command = try decoder.decode(Command.self, from: lineData)
                 commandHandler(command)
             } catch {
-                print("Failed to decode command: \(error)")
+                logger.error("Failed to decode command: \(error)")
             }
         }
     }

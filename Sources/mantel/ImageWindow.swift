@@ -11,7 +11,7 @@ final class ImageWindow {
 
     init(identifier: String, image: NSImage, frame: NSRect) {
         self.identifier = identifier
-        print("mantel: ImageWindow.init frame=\(frame)")
+        logger.debug("ImageWindow.init frame=\(String(describing: frame), privacy: .public)")
 
         // Borderless window that can display transparency
         let window = NSWindow(
@@ -22,7 +22,7 @@ final class ImageWindow {
         )
         // Set position explicitly after creation
         window.setFrameOrigin(frame.origin)
-        print("mantel: ImageWindow.init window.frame=\(window.frame)")
+        logger.debug("ImageWindow.init window.frame=\(String(describing: window.frame), privacy: .public)")
         window.isOpaque = false
         window.backgroundColor = .clear
         // Same level as normal windows for proper z-ordering
@@ -87,9 +87,9 @@ final class ImageWindow {
 
     /// Update window position and size
     func updateFrame(_ frame: NSRect) {
-        print("mantel: updateFrame requested=\(frame)")
+        logger.debug("updateFrame requested=\(String(describing: frame), privacy: .public)")
         window.setFrame(frame, display: true)
-        print("mantel: updateFrame actual=\(window.frame)")
+        logger.debug("updateFrame actual=\(String(describing: self.window.frame), privacy: .public)")
         imageView.frame = NSRect(origin: .zero, size: frame.size)
     }
 

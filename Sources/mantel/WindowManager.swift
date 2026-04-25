@@ -2,61 +2,38 @@ import AppKit
 import Foundation
 
 /// Manages all image overlay windows.
-/// Commands are queued and processed serially to avoid race conditions with AppKit.
+/// Commands are queued one at a time to give AppKit a run-loop turn between operations.
 @MainActor
 public final class WindowManager {
+    /// Command executor scheduling on MainActor
+    private let commandQueue = MainActorQueue()
+
     /// Active windows keyed by identifier (e.g. "preview")
     private var windows: [String: ImageWindow] = [:]
     private var cellWidth: CGFloat = 10
     private var cellHeight: CGFloat = 20
-    /// Command queue for serial processing
-    private var pendingCommands: [Command] = []
-    private var isProcessing = false
+
     /// Track last add command per identifier for re-rendering on window move
     private var lastAddCommands: [String: AddCommand] = [:]
+
     /// Window observers per terminal PID
     private var observers: [pid_t: WindowObserver] = [:]
+
     /// Focus observer for re-ordering on focus change
     private var focusObserver: FocusObserver?
 
     public init() {}
 
+    /// Queue a command for processing.
+    public func handleCommand(_ command: Command) {
+        commandQueue.enqueue { [weak self] in
+            self?.executeCommand(command)
+        }
+    }
+
     public func setCellSize(width: CGFloat, height: CGFloat) {
         self.cellWidth = width
         self.cellHeight = height
-    }
-
-    /// Queue a command for processing.
-    /// Commands are processed one at a time with a dispatch between each
-    /// to let AppKit's autorelease pool drain.
-    public func handleCommand(_ command: Command) {
-        pendingCommands.append(command)
-        scheduleProcessing()
-    }
-
-    private func scheduleProcessing() {
-        guard !isProcessing else { return }
-        isProcessing = true
-
-        DispatchQueue.main.async { [weak self] in
-            self?.processNextCommand()
-        }
-    }
-
-    /// Process commands one at a time with async dispatch between each.
-    /// This gives AppKit time to clean up between operations.
-    private func processNextCommand() {
-        guard !pendingCommands.isEmpty else {
-            isProcessing = false
-            return
-        }
-
-        let command = pendingCommands.removeFirst()
-        executeCommand(command)
-
-        DispatchQueue.main.async { [weak self] in
-            self?.processNextCommand()
-        }
     }
 
     private func executeCommand(_ command: Command) {
@@ -89,13 +66,13 @@ public final class WindowManager {
     private func addImage(_ command: AddCommand) {
         let path = command.path
         guard let image = NSImage(contentsOfFile: path) else {
-            print("Failed to load image: \(path)")
+            logger.error("Failed to load image: \(path, privacy: .private)")
             return
         }
 
         let terminalPid = command.terminalPid
         guard let terminal = getTerminal(pid: terminalPid) else {
-            print("Could not find terminal window for PID \(terminalPid)")
+            logger.error("Could not find terminal window for PID \(terminalPid, privacy: .public)")
             return
         }
 
@@ -128,13 +105,14 @@ public final class WindowManager {
 
         // Reuse existing window if same identifier, otherwise create new
         if let existing = windows[command.identifier] {
-            print("mantel: reusing window \(command.identifier), updating frame")
+            logger.debug("Reusing window \(command.identifier, privacy: .public), updating frame")
             existing.updateImage(image)
             existing.updateFrame(frame)
             existing.orderAbove(windowNumber: terminal.windowNumber)
         } else {
-            print("mantel: creating new window \(command.identifier)")
-            let imageWindow = ImageWindow(identifier: command.identifier, image: image, frame: frame)
+            logger.debug("Creating new window \(command.identifier, privacy: .public)")
+            let imageWindow = ImageWindow(
+                identifier: command.identifier, image: image, frame: frame)
             windows[command.identifier] = imageWindow
             imageWindow.orderAbove(windowNumber: terminal.windowNumber)
         }
@@ -153,8 +131,9 @@ public final class WindowManager {
     private func repositionImages(forTerminalPid pid: pid_t) {
         for (identifier, command) in lastAddCommands {
             guard command.terminalPid == pid,
-                  let imageWindow = windows[identifier],
-                  let terminal = getTerminal(pid: pid) else {
+                let imageWindow = windows[identifier],
+                let terminal = getTerminal(pid: pid)
+            else {
                 continue
             }
 
@@ -169,11 +148,12 @@ public final class WindowManager {
         // Small delay to let window z-order update
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.016) { [weak self] in
             guard let self else { return }
-            print("mantel: Focus changed to \(activePid), re-ordering images")
+            logger.debug("Focus changed to \(activePid, privacy: .public), re-ordering images")
             for (identifier, command) in self.lastAddCommands {
                 let terminalPid = command.terminalPid
                 guard let imageWindow = self.windows[identifier],
-                      let terminal = self.getTerminal(pid: terminalPid) else {
+                    let terminal = self.getTerminal(pid: terminalPid)
+                else {
                     continue
                 }
                 imageWindow.orderAbove(windowNumber: terminal.windowNumber)
@@ -241,8 +221,8 @@ public final class WindowManager {
         // Convert to AppKit: flip around primary screen height, get bottom edge for NSRect
         let pixelY = primaryHeight - imageTopInCGCoords - pixelHeight
 
-        print("mantel: terminal.bounds=\(terminal.bounds) primaryHeight=\(primaryHeight)")
-        print("mantel: imageTopInCGCoords=\(imageTopInCGCoords) pixelY=\(pixelY)")
+        logger.debug("terminal.bounds=\(String(describing: terminal.bounds), privacy: .public) primaryHeight=\(primaryHeight, privacy: .public)")
+        logger.debug("imageTopInCGCoords=\(imageTopInCGCoords, privacy: .public) pixelY=\(pixelY, privacy: .public)")
 
         return NSRect(x: pixelX, y: pixelY, width: pixelWidth, height: pixelHeight)
     }

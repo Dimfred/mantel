@@ -10,11 +10,14 @@ public enum Action: String, Decodable {
     case clear  // Destroy all windows
 }
 
-/// Command payloads that operate on a single image window.
 public struct BaseCommand: Decodable, Sendable {
     /// Unique ID for this window (e.g. "preview")
     public let identifier: String
 }
+public typealias RemoveCommand = BaseCommand
+public typealias HideCommand = BaseCommand
+public typealias ShowCommand = BaseCommand
+public typealias ToggleCommand = BaseCommand
 
 /// Fully specified image creation/update command.
 public struct AddCommand: Decodable, Sendable {
@@ -42,17 +45,8 @@ public struct AddCommand: Decodable, Sendable {
         case cols, rows
     }
 }
-
-public typealias RemoveCommand = BaseCommand
-public typealias HideCommand = BaseCommand
-public typealias ShowCommand = BaseCommand
-public typealias ToggleCommand = BaseCommand
-
-/// Command that clears all image windows.
 public struct ClearAll: Decodable, Sendable {}
 
-/// JSON command received via FIFO.
-/// Example: {"action":"add","identifier":"preview","terminal_pid":1234,"path":"/tmp/img.png","x":10,"y":2,"width":50,"height":30,"cols":80,"rows":24}
 public enum Command: Decodable, Sendable {
     case add(AddCommand)
     case remove(RemoveCommand)

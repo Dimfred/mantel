@@ -30,7 +30,7 @@ final class WindowObserver: @unchecked Sendable {
         // "AXTrustedCheckOptionPrompt" is the raw string value of kAXTrustedCheckOptionPrompt
         let options: CFDictionary = ["AXTrustedCheckOptionPrompt": true] as CFDictionary
         guard AXIsProcessTrustedWithOptions(options) else {
-            print("mantel: Accessibility access denied")
+            logger.error("Accessibility access denied")
             return false
         }
 
@@ -38,7 +38,7 @@ final class WindowObserver: @unchecked Sendable {
         var observerRef: AXObserver?
         let result = AXObserverCreate(pid, observerCallback, &observerRef)
         guard result == .success, let obs = observerRef else {
-            print("mantel: Failed to create AXObserver: \(result.rawValue)")
+            logger.error("Failed to create AXObserver: \(result.rawValue, privacy: .public)")
             return false
         }
         self.observer = obs
@@ -60,7 +60,7 @@ final class WindowObserver: @unchecked Sendable {
         for notification in notifications {
             let err = AXObserverAddNotification(obs, appElement, notification, selfPtr)
             if err != .success {
-                print("mantel: Failed to add notification \(notification): \(err.rawValue)")
+                logger.error("Failed to add notification \(notification as String, privacy: .public): \(err.rawValue, privacy: .public)")
             }
         }
 
@@ -71,7 +71,7 @@ final class WindowObserver: @unchecked Sendable {
             .defaultMode
         )
 
-        print("mantel: WindowObserver started for PID \(pid)")
+        logger.info("WindowObserver started for PID \(self.pid, privacy: .public)")
         return true
     }
 
@@ -83,12 +83,12 @@ final class WindowObserver: @unchecked Sendable {
                 .defaultMode
             )
             observer = nil
-            print("mantel: WindowObserver stopped")
+            logger.info("WindowObserver stopped")
         }
     }
 
     fileprivate func handleNotification(_ notification: String) {
-        print("mantel: Window event: \(notification)")
+        logger.debug("Window event: \(notification, privacy: .public)")
         callback()
     }
 }

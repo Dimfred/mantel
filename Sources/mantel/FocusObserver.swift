@@ -27,14 +27,14 @@ final class FocusObserver {
                 self.callback(pid)
             }
         }
-        print("mantel: FocusObserver started")
+        logger.info("FocusObserver started")
     }
 
     func stop() {
         if let obs = observation {
             NSWorkspace.shared.notificationCenter.removeObserver(obs)
             observation = nil
-            print("mantel: FocusObserver stopped")
+            logger.info("FocusObserver stopped")
         }
     }
 }
