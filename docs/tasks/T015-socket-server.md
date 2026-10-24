@@ -14,6 +14,7 @@ Feature: [FIFO](../FEATURES.md#fifo)
 
 ## Notes
 
-- Currently compiled but never started; `SocketError` cases carry no errno
+- Was compiled but never started; FIFO is the only transport clients use
+- User (2026-10-24): "delete it the server" → deleted
 
 ## Commits

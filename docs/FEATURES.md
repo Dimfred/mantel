@@ -21,7 +21,7 @@ Non-goals: cross-platform, App Store, Sixel / Kitty / iTerm2 protocols (native w
 - Invalid JSON / unknown action / missing field → logged and skipped, the daemon keeps reading
 - Commands are executed in the order they arrive
 - Several writers in quick succession never lose a command (T010)
-- ? Second transport via unix socket (`SocketServer` exists but is not wired, H1)
+- FIFO is the only transport (no socket)
 
 ### Commands
 
@@ -59,7 +59,7 @@ Non-goals: cross-platform, App Store, Sixel / Kitty / iTerm2 protocols (native w
 
 - `terminal_pid` may be the terminal or any descendant (shell, `lf`, …) → mantel walks up the process tree (max 10 hops) to the first process owning an on-screen window
 - Only regular windows (layer 0) count, not menus / tooltips (T012)
-- ? Terminal app with several windows in one process: which window hosts the shell (H2)
+- Terminal app with several windows in one process → image anchors to its frontmost window (accepted, see `Later` in `docs/TASKS.md`)
 
 ### Move and resize
 

@@ -23,5 +23,5 @@ Find the terminal window for a pid and convert cell coordinates to an AppKit fra
 ## Known gaps
 
 - First on-screen window of the pid wins, no layer filter (menus, tooltips) (T012)
-- Multi-window terminals (one process, many windows): frontmost window wins, may not be the one hosting the shell (H2)
+- Multi-window terminals (one process, many windows): frontmost window wins, may not be the one hosting the shell; accepted by the user, parked in `Later`
 - Cell size includes window chrome (title bar, padding) since bounds are the whole window

@@ -18,13 +18,11 @@ Last review: none (`/code-review` after each milestone, see CLAUDE.md loop proto
 
 ## Blocked
 
-- T015: keep `SocketServer` as second transport or delete it? (H1)
-- T016: multi-window terminals, how to pick the window hosting the shell? (H2)
-
 ## Later
 
 Not now, don't pick up in the loop.
 
+- Multi-window terminals (one process, many windows): image anchors to the frontmost window, may not be the one hosting the shell. User happy with current behavior (2026-10-24), keep as is; fix idea if it ever matters: client sends a window id
 - Generic windows: `terminal_pid` → `window_pid` (any app window, not only terminals), cell grid optional (pixel coords)
 - Configurable FIFO path (flag / env)
 
@@ -44,5 +42,4 @@ Not now, don't pick up in the loop.
 - [ ] T012 [Terminal lookup: regular windows only](tasks/T012-terminal-layer-filter.md)
 - [ ] T013 [Close removed windows without crash](tasks/T013-window-cleanup.md)
 - [ ] T014 [Stop observers for terminals without images](tasks/T014-observer-cleanup.md)
-- [!] T015 [SocketServer: wire or delete](tasks/T015-socket-server.md)
-- [!] T016 Multi-window terminals: pick the window hosting the shell
+- [x] T015 [SocketServer: wire or delete](tasks/T015-socket-server.md)

@@ -11,11 +11,10 @@ Receive raw command bytes from clients, decode, hand `Command` to a `@Sendable` 
 
 - `FifoServer(fifoPath:commandHandler:)`: `start()` (unlink + `mkfifo 0666`, throws `FifoError.createFailed(errno:)`), `stop()` (unlink)
 - Read loop on a global utility queue: open (blocks until a writer) → read to EOF → close → decode → handler
-- `SocketServer`: unix socket, newline-delimited JSON; not used by the app (H1)
 
 ## Decisions
 
-- FIFO over socket: clients are shell scripts, `echo … > fifo` is the simplest client
+- FIFO only, no socket: clients are shell scripts, `echo … > fifo` is the simplest client; unused `SocketServer` deleted (T015)
 - Handler is called off-main; the app hops to main before touching `WindowManager`
 
 ## Known gaps

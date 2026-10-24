@@ -37,7 +37,7 @@ FocusObserver (app activated)  ──┴▶ WindowManager ── afterSettle 16m
 ## Domains
 
 - [command](architecture/command.md): JSON command protocol (`Command`, `AddCommand`)
-- [server](architecture/server.md): FIFO reader (+ unused socket server)
+- [server](architecture/server.md): FIFO reader
 - [window](architecture/window.md): `WindowManager`, overlay windows, command queue
 - [terminal](architecture/terminal.md): terminal window lookup, process tree walk, cell → pixel math
 - [observer](architecture/observer.md): AX window move / resize + app focus observers
