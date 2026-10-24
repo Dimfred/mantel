@@ -74,10 +74,9 @@ Non-goals: cross-platform, App Store, Sixel / Kitty / iTerm2 protocols (native w
 
 ### Install
 
-- `brew install --cask dimfred/tap/mantel` → binary in `$(brew --prefix)/bin`, LaunchAgent `com.dimfred.mantel` written to `~/Library/LaunchAgents` and started (log in `$(brew --prefix)/var/log/mantel.log`)
-- `brew uninstall --cask mantel` boots the LaunchAgent out and deletes its plist; `--zap` also removes the log
-- `make install` → binary in `/usr/local/bin`, same LaunchAgent label (replaces the brew one); `make uninstall` reverts
+- `brew install dimfred/tap/mantel` → binary in `$(brew --prefix)/bin`; `brew services start mantel` installs + starts the LaunchAgent `sh.brew.mantel` (log in `$(brew --prefix)/var/log/mantel.log`); caveats remind to start it and to `brew services stop mantel` before `brew uninstall`
+- `make install` → binary in `/usr/local/bin`, LaunchAgent `com.dimfred.mantel` started at login; `make uninstall` reverts; don't run it next to the brew service (both read the same FIFO)
 
 ### Release
 
-- `make release`: bump patch in `VERSION`, GitHub release with the arm64 binary, update the brew tap cask (`package/brew/mantel.rb` → `homebrew-tap/Casks/`)
+- `make release`: bump patch in `VERSION`, GitHub release with the arm64 binary, update the brew tap formula (`package/brew/mantel.rb` → `homebrew-tap/Formula/`)

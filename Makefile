@@ -94,17 +94,19 @@ release-github: build-release
 
 release-brew:
 	@VERSION=$$(cat VERSION); \
+	MACOS_URL="https://github.com/Dimfred/$(PROJECT_NAME)/releases/download/v$${VERSION}/$(PROJECT_NAME)-v$${VERSION}-arm64"; \
 	MACOS_BIN="releases/$(PROJECT_NAME)-v$${VERSION}-arm64"; \
 	test -f "$$MACOS_BIN" || { echo "Missing $$MACOS_BIN, run make release-github first"; exit 1; }; \
 	MACOS_SHA=$$(shasum -a 256 "$$MACOS_BIN" | cut -d' ' -f1); \
 	echo "macOS SHA256: $$MACOS_SHA"; \
+	sed -i '' "s|^  url \".*\"|  url \"$$MACOS_URL\"|" package/brew/$(PROJECT_NAME).rb; \
 	sed -i '' "s|^  version \".*\"|  version \"$$VERSION\"|" package/brew/$(PROJECT_NAME).rb; \
 	sed -i '' "s|^  sha256 \".*\"|  sha256 \"$$MACOS_SHA\"|" package/brew/$(PROJECT_NAME).rb; \
-	echo "Cask updated for v$$VERSION"; \
-	mkdir -p ../homebrew-tap/Casks; \
-	cp package/brew/$(PROJECT_NAME).rb ../homebrew-tap/Casks/; \
+	echo "Formula updated for v$$VERSION"; \
+	mkdir -p ../homebrew-tap/Formula; \
+	cp package/brew/$(PROJECT_NAME).rb ../homebrew-tap/Formula/; \
 	cd ../homebrew-tap; \
-	if [ -f Formula/$(PROJECT_NAME).rb ]; then git rm -q Formula/$(PROJECT_NAME).rb; fi; \
+	if [ -f Casks/$(PROJECT_NAME).rb ]; then git rm -q Casks/$(PROJECT_NAME).rb; fi; \
 	git add . && git commit -m "Update $(PROJECT_NAME) to v$$VERSION" && git push; \
 	echo "Pushed to homebrew-tap"
 

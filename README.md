@@ -6,8 +6,11 @@ Draws images in native borderless windows positioned over a terminal, in termina
 ## Install
 
 ```bash
-brew install --cask dimfred/tap/mantel   # binary + LaunchAgent, started right away
-brew uninstall --cask mantel             # stops the LaunchAgent, removes its plist
+brew install dimfred/tap/mantel
+brew services start mantel   # LaunchAgent, started now and at login
+
+brew services stop mantel    # before uninstalling, removes the LaunchAgent
+brew uninstall mantel
 ```
 
 From source:
