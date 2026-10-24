@@ -1,6 +1,6 @@
 import Foundation
 
-public enum FifoError: Error {
+public enum FifoError: Error, Equatable {
     case createFailed(errno: Int32)
 }
 

@@ -29,7 +29,7 @@ let package = Package(
         .testTarget(
             name: "MantelCoreTests",
             dependencies: ["MantelCore"],
-            path: "Tests/mantelTests"
+            path: "Tests/MantelCoreTests"
         ),
     ],
     swiftLanguageModes: [.v6]

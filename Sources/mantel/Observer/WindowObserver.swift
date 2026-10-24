@@ -51,7 +51,7 @@ final class WindowObserver: @unchecked Sendable {
             kAXWindowMovedNotification as CFString,
             kAXWindowResizedNotification as CFString,
             kAXFocusedWindowChangedNotification as CFString,
-            kAXMainWindowChangedNotification as CFString
+            kAXMainWindowChangedNotification as CFString,
         ]
 
         // Store self pointer for callback
@@ -60,7 +60,9 @@ final class WindowObserver: @unchecked Sendable {
         for notification in notifications {
             let err = AXObserverAddNotification(obs, appElement, notification, selfPtr)
             if err != .success {
-                logger.error("Failed to add notification \(notification as String, privacy: .public): \(err.rawValue, privacy: .public)")
+                logger.error(
+                    "Failed to add notification \(notification as String, privacy: .public): \(err.rawValue, privacy: .public)"
+                )
             }
         }
 

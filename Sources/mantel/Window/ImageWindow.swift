@@ -4,7 +4,7 @@ import Foundation
 /// Wrapper around NSWindow for displaying an image overlay.
 /// The window is borderless, transparent, and floats above other windows.
 @MainActor
-final class ImageWindow {
+final class ImageWindow: OverlayWindow {
     let identifier: String
     let window: NSWindow
     private let imageView: NSImageView
@@ -44,12 +44,11 @@ final class ImageWindow {
         self.imageView = imageView
     }
 
-    /// Make window visible
-    func show() {
-        window.orderFront(nil)
+    var isVisible: Bool {
+        window.isVisible
     }
 
-    /// Order this window just above the given window number
+    /// Order this window just above the given window number (also makes it visible)
     func orderAbove(windowNumber: CGWindowID) {
         window.order(.above, relativeTo: Int(windowNumber))
     }
@@ -57,14 +56,6 @@ final class ImageWindow {
     /// Hide window without destroying it
     func hide() {
         window.orderOut(nil)
-    }
-
-    func toggle() {
-        if window.isVisible {
-            hide()
-        } else {
-            show()
-        }
     }
 
     /// Hide and clear image - window stays allocated for reuse.

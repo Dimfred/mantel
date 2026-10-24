@@ -1,3 +1,14 @@
+# CLAUDE
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+# SCRATCH
+/tmp/
+releases/
+
+# REVIEW NOTES (see docs/memory/review-file-flow.md)
+*_REVIEW.md
+
 # GENERAL
 **/build/*
 **/*.log

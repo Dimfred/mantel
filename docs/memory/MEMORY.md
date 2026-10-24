@@ -1,0 +1,11 @@
+- [Decisions](decisions.md) — choices taken without the user, revisitable
+- [Stack choice](stack-choice.md) — Swift 6 / SPM / AppKit, swift format, Swift Testing, no deps
+- [Token hygiene](token-hygiene.md) — auto-compact 200k, self-compact only after reviewed milestone > 150k, state in docs
+- [Command timeouts](command-timeouts.md) — `timeout`, log to `tmp/` file, no `| tail` on make, `git --no-pager`
+- [Tasks format](tasks-format.md) — TASKS.md index parsed by nvim plugin, checkbox = status, details in docs/tasks/; architecture split per domain; FEATURES = target state
+- [Lint single target](lint-single-target.md) — `make lint` = format + safe fixes + lint, never unsafe autofixes
+- [Scratch in tmp](scratch-in-tmp.md) — throwaway files in repo `tmp/`, never session scratchpad or `/tmp`
+- [Loop never stops](loop-never-stops.md) — never delete the cron, plan next milestone, user items → docs/HUMAN_TODO.md
+- [Review file flow](review-file-flow.md) — user notes in `<PROJECT>_REVIEW.md`, fix from there, delete when done, never commit
+- [Language English](language-english.md) — always answer in English, never German
+- [Permission model](permission-model.md) — edit-guard hook, trusted dirs, allow / deny list

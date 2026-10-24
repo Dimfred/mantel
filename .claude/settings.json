@@ -1,0 +1,40 @@
+{
+  "autoCompactEnabled": true,
+  "autoCompactWindow": 200000,
+  "autoMemoryDirectory": "~/workspaces/mantel/docs/memory",
+  "permissions": {
+    "allow": [
+      "Bash(make check *)",
+      "Bash(make lint *)",
+      "Bash(make test *)",
+      "Bash(make build *)",
+      "Bash(make docs-lint *)",
+      "Bash(make feature-gaps *)",
+      "Bash(make help *)",
+      "Bash(git status *)",
+      "Bash(git log *)",
+      "Bash(git diff *)",
+      "Bash(git show *)",
+      "Bash(git --no-pager status *)",
+      "Bash(git --no-pager log *)",
+      "Bash(git --no-pager diff *)",
+      "Bash(git --no-pager show *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(log show *)",
+      "Bash(nvrr send '/compact<CR>continue<CR>')"
+    ],
+    "deny": [
+      "Bash(git push *)",
+      "Bash(git --no-pager push *)",
+      "Bash(sudo *)",
+      "Bash(security *)",
+      "Bash(secret-tool *)",
+      "Bash(make install *)",
+      "Bash(make uninstall *)",
+      "Bash(make release *)",
+      "Bash(make release-* *)",
+      "Bash(make version-patch *)"
+    ]
+  }
+}

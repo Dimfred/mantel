@@ -5,11 +5,26 @@ PROJECT_NAME := mantel
 
 ################################################################################
 # APP
+SWIFT_SOURCES := Package.swift Sources Tests
+
+check: lint docs-lint test ## lint, docs-lint, test; must be green before every commit
+
+# Symlink, not core.hooksPath: that would turn off other hooks in .git/hooks (e.g. git-lfs).
+hooks: ## install the git pre-commit hook (runs make check)
+	ln -sf ../../scripts/pre-commit.sh .git/hooks/pre-commit
+
+lint: ## format + safe autofixes + lint + typecheck, fails on what's left
+	swift format format --in-place --recursive --parallel $(SWIFT_SOURCES)
+	swift format lint --strict --recursive --parallel $(SWIFT_SOURCES)
+	swift build --build-tests -Xswiftc -warnings-as-errors
+
+test: ## run tests, filter with ARGS=<pattern>
+	swift test $(if $(ARGS),--filter $(ARGS))
+
+dev: run ## run the app in dev mode
+
 run: ## run the project
 	swift run
-
-test: ## run all tests
-	swift test
 
 build: ## build the project
 	swift build
@@ -97,6 +112,14 @@ release-commit:
 	git commit --amend --no-edit; \
 	git push; \
 	echo "Pushed release v$$VERSION"
+
+################################################################################
+# DOCS
+docs-lint: ## check task format, task / feature / architecture links
+	./scripts/docs-lint.sh docs
+
+feature-gaps: ## list FEATURES.md sections no task links to
+	./scripts/feature-gaps.sh docs
 
 #########################################################################
 # HELP

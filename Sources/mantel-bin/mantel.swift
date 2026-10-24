@@ -9,8 +9,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let windowManager = WindowManager()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        windowManager.setCellSize(width: 10, height: 20)
-        fifoServer = FifoServer(fifoPath: FIFO_PATH) { [weak self] command in
+        fifoServer = FifoServer(fifoPath: defaultFifoPath) { [weak self] command in
             DispatchQueue.main.async {
                 self?.windowManager.handleCommand(command)
             }
