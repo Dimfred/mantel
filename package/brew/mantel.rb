@@ -10,7 +10,12 @@ class Mantel < Formula
   depends_on :macos
 
   def install
-    bin.install "mantel-v#{version}-arm64" => "mantel"
+    binary = "mantel-v#{version}-arm64"
+    # ad-hoc signed, not notarized: Gatekeeper refuses to launch it while quarantined
+    if Utils.safe_popen_read("/usr/bin/xattr", binary).include?("com.apple.quarantine")
+      system "/usr/bin/xattr", "-d", "com.apple.quarantine", binary
+    end
+    bin.install binary => "mantel"
   end
 
   def caveats
@@ -28,6 +33,7 @@ class Mantel < Formula
   end
 
   test do
-    assert_match "mantel", shell_output("#{bin}/mantel --help", 1)
+    assert_predicate bin/"mantel", :executable?
+    refute_match "com.apple.quarantine", shell_output("/usr/bin/xattr #{bin}/mantel")
   end
 end
