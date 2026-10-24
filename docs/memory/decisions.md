@@ -2,7 +2,10 @@
 name: decisions
 description: Choices taken without the user (spec left them open); user may revisit any of them
 metadata:
+  node_type: memory
   type: project
+  originSessionId: 1d21028f-a383-41f7-95c3-319a62f02520
+  modified: 2026-10-24T17:35:05.316Z
 ---
 
 Log of decisions Claude took alone.
@@ -20,3 +23,4 @@ User (bits, 2026-10-21): "remember decision points you took, we change that late
 - 2026-10-24 `FifoServerTests` invalid-JSON test sleeps 200ms between writes until T010 fixes the write race
 - 2026-10-24 Old `CONTEXT.md` (socket-era spec) folded into `docs/FEATURES.md` / `docs/ARCHITECTURE.md` and removed; old `CLAUDE.md` features / known issues / TODO moved to docs
 - 2026-10-24 M1 task ids start at T010 (T007–T009 unused)
+- 2026-10-24 Brew cask (user choice over formula) keeps the label `com.dimfred.mantel` so it and `make install` replace each other; brew log goes to `$(brew --prefix)/var/log/mantel.log` (install steps have no home token for `~/Library/Logs`)
