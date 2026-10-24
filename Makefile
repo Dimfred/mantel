@@ -95,11 +95,12 @@ release-github: build-release
 release-brew:
 	@VERSION=$$(cat VERSION); \
 	MACOS_URL="https://github.com/Dimfred/$(PROJECT_NAME)/releases/download/v$${VERSION}/$(PROJECT_NAME)-v$${VERSION}-arm64"; \
-	echo "Fetching macOS SHA..."; \
-	MACOS_SHA=$$(curl -sL "$$MACOS_URL" | shasum -a 256 | cut -d' ' -f1); \
+	MACOS_BIN="releases/$(PROJECT_NAME)-v$${VERSION}-arm64"; \
+	test -f "$$MACOS_BIN" || { echo "Missing $$MACOS_BIN, run make release-github first"; exit 1; }; \
+	MACOS_SHA=$$(shasum -a 256 "$$MACOS_BIN" | cut -d' ' -f1); \
 	echo "macOS SHA256: $$MACOS_SHA"; \
 	sed -i '' "s|version \".*\"|version \"$$VERSION\"|" package/brew/$(PROJECT_NAME).rb; \
-	sed -i '' "s|url \".*macos-.*\"|url \"$$MACOS_URL\"|" package/brew/$(PROJECT_NAME).rb; \
+	sed -i '' "s|url \".*\"|url \"$$MACOS_URL\"|" package/brew/$(PROJECT_NAME).rb; \
 	sed -i '' "/$(PROJECT_NAME)-v/{n;s|sha256 \".*\"|sha256 \"$$MACOS_SHA\"|;}" package/brew/$(PROJECT_NAME).rb; \
 	echo "Formula updated for v$$VERSION"; \
 	cp package/brew/$(PROJECT_NAME).rb ../homebrew-tap/Formula/; \

@@ -6,7 +6,7 @@ class Mantel < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/Dimfred/mantel/releases/download/v0.1.0/mantel-v0.1.0-arm64"
+      url "https://github.com/Dimfred/mantel/releases/download/v0.1.1/mantel-v0.1.1-arm64"
       sha256 "c43febae5465be9e9cd5b8e6ba4fa1a294567138bcbaa9461192229cf03858a9"
     end
   end
